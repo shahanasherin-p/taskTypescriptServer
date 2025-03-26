@@ -12,11 +12,11 @@ router.post('/register',userController.registerController)
 
 router.post('/login',userController.loginController)
 
-router.post('/add-task',jwtMiddleware,taskController.addTaskController)
+router.post('/add-task',jwtMiddleware,multerMiddleware.single('taskImage'),taskController.addTaskController)
 
 router.get('/all-task',jwtMiddleware,taskController.getAllTaskController)
 
-router.put('/tasks/:id/edit-task',jwtMiddleware,taskController.updateTaskController)
+router.put('/tasks/:id/edit-task',multerMiddleware.single('taskImage'),jwtMiddleware,taskController.updateTaskController)
 
 router.delete('/tasks/:id/delete-task',jwtMiddleware,taskController.deleteTaskController)
 

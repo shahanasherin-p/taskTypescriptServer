@@ -20,6 +20,10 @@ const taskSchema = new mongoose.Schema({
     userId:{
         type:String,
         required:true
+    },
+    taskImage:{
+        type:String,
+        required:true
     }
 })
 

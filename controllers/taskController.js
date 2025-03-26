@@ -1,28 +1,69 @@
 const tasks =require("../models/taskModel");
 
 
-
-exports.addTaskController=async(req,res)=>{
-    console.log("inside addTaskController");
-    const userId=req.userId
+exports.addTaskController = async (req, res) => {
+    console.log("Inside addTaskController");
+    
+    const userId = req.userId;
     console.log(userId);
-    const {title,description,status,progress} =req.body
-    console.log(title,description,status,progress);
+    
+    const { title, description, status, progress } = req.body;
+    const taskImage = req.file ? req.file.filename : null;
+    
+    console.log(title, description, status, progress, taskImage);
+    
     try {
-        const existingTask = await tasks.findOne({title})
-        if(existingTask){
-            res.status(406).json("task already exist in our collection ..Please upload another")
-        }else{
-            const newtask = new tasks({
-                title,description,status,progress,userId
-            })
-            await newtask.save()
-            res.status(200).json(newtask)
+        // Check if a task with the same title already exists
+        const existingTask = await tasks.findOne({ title, userId });
+        
+        if (existingTask) {
+            return res.status(406).json({ 
+                message: "A task with this title already exists in your collection. Please use a different title." 
+            });
         }
+        
+        // Validate required fields
+        if (!title || !description || !status || progress === undefined) {
+            return res.status(400).json({ 
+                message: "All fields (title, description, status, progress) are required" 
+            });
+        }
+        
+        // Validate progress (assuming it should be between 0 and 100)
+        if (progress < 0 || progress > 100) {
+            return res.status(400).json({ 
+                message: "Progress must be between 0 and 100" 
+            });
+        }
+        
+        // Create new task
+        const newTask = new tasks({
+            title,
+            description,
+            status,
+            progress,
+            taskImage: taskImage || '', // Ensure a default empty string if no image
+            userId
+        });
+        
+        // Save the task
+        await newTask.save();
+        
+        res.status(201).json({
+            message: "Task created successfully",
+            task: newTask
+        });
+        
     } catch (error) {
-        res.status(401).json(error)
-    } 
-}
+        console.error("Error in addTaskController:", error);
+        res.status(500).json({ 
+            message: "Internal server error", 
+            error: error.message 
+        });
+    }
+};
+
+
 exports.getAllTaskController=async(req,res)=>{
     console.log("inside getAllTaskController");
     const userId=req.userId
@@ -53,10 +94,10 @@ exports.updateTaskController = async (req, res) => {
     const id = req.params.id;
     const userId = req.userId;
     const { title, description, status, progress } = req.body;
-
+    const taskImage = req.file ? req.file.filename : req.body.taskImage; 
     console.log("Task ID:", id);
     console.log("User ID:", userId);
-    console.log("Update Data:", { title, description, status, progress });
+    console.log("Update Data:", { title, description, status, progress,taskImage });
 
     if (!userId) {
         console.log("User ID is null");
@@ -70,11 +111,17 @@ exports.updateTaskController = async (req, res) => {
             return res.status(404).json({ message: "Task not found" });
         }
 
-        const updateTask = await tasks.findByIdAndUpdate(
-            id,
-            { title, description, status, progress, userId },
-            { new: true }
-        );
+        // Only update the image if a new one is provided, otherwise keep the old one
+        const updatedData = {
+            title,
+            description,
+            status,
+            progress,
+            userId,
+            taskImage: taskImage ? taskImage : existingTask.taskImage  // Use the existing image if no new one is provided
+        };
+
+        const updateTask = await tasks.findByIdAndUpdate(id, updatedData, { new: true });
 
         console.log("Updated Task:", updateTask);
 
@@ -84,6 +131,7 @@ exports.updateTaskController = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
 
 
 
