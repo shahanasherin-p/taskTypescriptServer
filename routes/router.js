@@ -1,7 +1,6 @@
 const express =require('express')
 const jwtMiddleware = require('../middleware/jwtMiddleware')
 const multerMiddleware = require('../middleware/multerMiddleware')
-
 const userController = require('../controllers/userController')
 const taskController =require('../controllers/taskController')
 
@@ -23,6 +22,7 @@ router.delete('/tasks/:id/delete-task',jwtMiddleware,taskController.deleteTaskCo
 router.get('/tasks/:id', jwtMiddleware,taskController.getTaskById);
 
 router.put('/edit-user',jwtMiddleware,multerMiddleware.single('profileImage'),userController.editUserController)
+
 
 
 module.exports = router

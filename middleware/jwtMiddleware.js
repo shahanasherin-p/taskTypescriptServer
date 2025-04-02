@@ -14,9 +14,9 @@ const jwtMiddleware = (req, res, next) => {
 
     if (token) {
         try {
-            const jwtResponse = jwt.verify(token, process.env.JWTPASSWORD);
+            const jwtResponse = jwt.verify(token, process.env.JWT_SECRET_KEY);
             console.log("JWT Response:", jwtResponse);
-            req.userId = jwtResponse.userId;
+            req.userId = jwtResponse.id;
             next();
         } catch (err) {
             console.error("JWT Verification Error:", err);
