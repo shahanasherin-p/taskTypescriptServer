@@ -37,7 +37,7 @@ exports.loginController=async(req,res)=>{
         const existingUser=await users.findOne({email,password})
         if(existingUser){
             // token generation
-            const token=jwt.sign({userId:existingUser._id},process.env.JWTPASSWORD)
+            const token=jwt.sign({userId:existingUser._id},process.env.JWT_SECRET_KEY)
             res.status(200).json({user:existingUser,token})
         }else{
             res.status(404).json("Incorrect Email/Password")
