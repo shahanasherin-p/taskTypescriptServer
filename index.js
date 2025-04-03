@@ -5,6 +5,7 @@ const router = require("./routes/router");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose"); 
 require("./database/dbConnection");
+const jwtMiddleware = require('./middleware/jwtMiddleware')
 
 const User = require("./models/userModel"); 
 
@@ -42,33 +43,33 @@ taskServer.use(passport.session());
 const JWT_SECRET = process.env.JWT_SECRET_KEY || "your-secret-key-change-this";
 
 // ✅ Generate JWT Token function
-function generateToken(user) {
-  console.log("🔹 Generating token for userId:", user.id);
-  return jwt.sign(
-    {
-      id: user.id, // ✅ Using MongoDB _id instead of Google id
-      email: user.email,
-      name: user.name,
-    },
-    JWT_SECRET,
-    { expiresIn: "24h" }
-  );
-}
+// function generateToken(user) {
+//   console.log("🔹 Generating token for userId:", user.id);
+//   return jwt.sign(
+//     {
+//       id: user.userId, 
+//       email: user.email,
+//       name: user.name,
+//     },
+//     JWT_SECRET,
+//     { expiresIn: "24h" }
+//   );
+// }
 
 // ✅ Middleware to verify JWT Token
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
+// const authenticateToken = (req, res, next) => {
+//   const authHeader = req.headers["authorization"];
+//   const token = authHeader && authHeader.split(" ")[1];
 
-  if (!token) return res.status(401).json({ message: "Authentication required" });
+//   if (!token) return res.status(401).json({ message: "Authentication required" });
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ message: "Invalid or expired token" });
+//   jwt.verify(token, JWT_SECRET, (err, user) => {
+//     if (err) return res.status(403).json({ message: "Invalid or expired token" });
 
-    req.user = user;
-    next();
-  });
-};
+//     req.user = user;
+//     next();
+//   });
+// };
 
 // ✅ Google OAuth Strategy
 passport.use(
@@ -152,7 +153,7 @@ taskServer.get(
     }
 
     // ✅ Generate Token with MongoDB _id
-    const token = generateToken(req.user);
+    const token = jwtMiddleware(req.user);
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 
     // Redirect to frontend with token in URL
@@ -161,7 +162,7 @@ taskServer.get(
 );
 
 // ✅ Token Verification Endpoint
-taskServer.get("/api/verify-token", authenticateToken, (req, res) => {
+taskServer.get("/verify-token", jwtMiddleware, (req, res) => {
   res.json({ valid: true, user: req.user });
 });
 

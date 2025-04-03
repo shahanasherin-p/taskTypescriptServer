@@ -16,15 +16,19 @@ const jwtMiddleware = (req, res, next) => {
         try {
             const jwtResponse = jwt.verify(token, process.env.JWT_SECRET_KEY);
             console.log("JWT Response:", jwtResponse);
-            req.userId = jwtResponse.id;
+
+            // ✅ Fix: Ensure `req.user` is correctly set
+            req.userId = jwtResponse.userId || jwtResponse.id;  
+
+            console.log("Middleware userId:", req.userId);
             next();
         } catch (err) {
             console.error("JWT Verification Error:", err);
-            res.status(401).json("Authorization failed... please login");
+            return res.status(401).json("Authorization failed... please login");
         }
     } else {
         console.log("Token missing after split");
-        res.status(401).json("Authorization failed... token is missing");
+        return res.status(401).json("Authorization failed... token is missing");
     }
 };
 
