@@ -23,6 +23,13 @@ router.get('/tasks/:id', jwtMiddleware,taskController.getTaskById);
 
 router.put('/edit-user',jwtMiddleware,multerMiddleware.single('profileImage'),userController.editUserController)
 
+router.get("/all-users",jwtMiddleware,userController.getAllUsersController)
+
+router.delete('/user/:id/remove',jwtMiddleware,userController.deleteUser)
+
+router.get('/all-tasks',jwtMiddleware,taskController.getAllTasks);
+
+
 
 
 module.exports = router

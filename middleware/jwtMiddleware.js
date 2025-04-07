@@ -17,7 +17,6 @@ const jwtMiddleware = (req, res, next) => {
             const jwtResponse = jwt.verify(token, process.env.JWT_SECRET_KEY);
             console.log("JWT Response:", jwtResponse);
 
-            // ✅ Fix: Ensure `req.user` is correctly set
             req.userId = jwtResponse.userId || jwtResponse.id;  
 
             console.log("Middleware userId:", req.userId);

@@ -47,7 +47,7 @@ function generateToken(user) {
   console.log("🔹 Generating token for userId:", user.id);
   return jwt.sign(
     {
-      id: user.userId, 
+      id: user._id, 
       email: user.email,
       name: user.name,
     },

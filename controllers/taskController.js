@@ -87,7 +87,6 @@ exports.deleteTaskController=async(req,res)=>{
     }
 }
 
-
 exports.updateTaskController = async (req, res) => {
     console.log("Inside updateTaskController");
 
@@ -132,8 +131,6 @@ exports.updateTaskController = async (req, res) => {
     }
 };
 
-
-
 exports.getTaskById = async (req, res) => {
     const id = req.params.id;
     const userId = req.userId;
@@ -150,5 +147,17 @@ exports.getTaskById = async (req, res) => {
     } catch (error) {
       console.error("Error fetching task:", error);
       res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+exports.getAllTasks = async (req, res) => {
+
+    console.log("Inside getAllBlogPosts ");
+
+    try {
+        const posts = await tasks.find().sort({ createdAt: -1 });
+        res.status(200).json(posts);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching blog posts", error });
     }
 };

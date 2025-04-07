@@ -9,14 +9,14 @@ const { oauth2Client } = require('../middleware/googleAuthMiddleware');
 exports.registerController=async(req,res)=>{
     console.log("Inside Register Controller")
     console.log(req.body)
-    const {username,email,password}=req.body
+    const {username,email,password,role}=req.body
 
     try{
         const existingUser=await users.findOne({email})
         if(existingUser){
             res.status(406).json("Already existing user.. Please Login")
         }else{
-            const newUser= new users({username,email,password})
+            const newUser= new users({username,email,password,role: role || "User",})
             await newUser.save()
             res.status(200).json(newUser)
         }
@@ -66,57 +66,30 @@ exports.editUserController=async(req,res)=>{
 
 
 
-// exports.googleAuthCallback = async (req, res) => {
-//     console.log("🚀 Google Auth Callback triggered");
-//     console.log("Received user from Google:", req.user);
-    
-//     if (!req.user) {
-//       console.error("❌ Google authentication failed.");
-//       return res.status(401).json({ message: "Google authentication failed" });
-//     }
-    
-//     const googleUser = req.user;
-//     console.log("✅ Extracted Google User:", googleUser);
-    
-//     try {
-//       // Find existing user or create a new one
-//       let user = await users.findOne({ email: googleUser.email });
-      
-//       if (!user) {
-//         user = new users({
-//           username: googleUser.displayName,
-//           email: googleUser.email,
-//           googleId: googleUser.id,
-//           profileImage: googleUser.photos?.[0]?.value || "",
-//         });
-        
-//         await user.save();
-//         console.log("🆕 New user created:", user);
-//       }
-      
-//       console.log("🔍 User found or created:", user);
-      
-//       // Check if JWT secret is available
-//       const jwtSecret = process.env.JWT_SECRET_KEY || process.env.JWT_SECRET;
-      
-//       if (!jwtSecret) {
-//         console.error("❌ JWT secret is missing");
-//         return res.status(500).json({ message: "Server error" });
-//       }
-      
-//       // Generate authentication token
-//       const token = jwt.sign(
-//         { id: user._id, username: user.username, email: user.email },
-//         jwtSecret,
-//         { expiresIn: "1h" }
-//       );
-      
-//       console.log("🔑 Generated Token:", token);
-      
-//       // Redirect to frontend with token
-//       res.redirect(`${process.env.FRONTEND_URL}/auth-success?token=${token}`);
-//     } catch (error) {
-//       console.error("⚠️ Error in Google Auth Callback:", error);
-//       res.status(500).json({ message: "Authentication process failed", error: error.message });
-//     }
-// };
+// get all users
+
+exports.getAllUsersController=async(req,res)=>{
+    console.log("Inside getAllUsersController")
+    try{
+        const allUsers=await users.find({"role":"User"})
+        res.status(200).json(allUsers)
+    }catch(err){
+        res.status(401).json(err)
+    }
+}
+
+// delete a user 
+exports.deleteUser = async (req, res) => {
+    console.log("Inside deleteUser");
+
+    try {
+        const deletedUser = await users.findByIdAndDelete(req.params.id);
+        if (!deletedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json({ message: "User deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        res.status(500).json({ message: "Error deleting user", error: error.message });
+    }
+};
